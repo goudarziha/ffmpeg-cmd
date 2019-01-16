@@ -105,3 +105,17 @@ ffmpeg -i merge_img.mp4 -filter:v "crop=in_w/4:in_h:t*100:0" dynamic_view_merge_
 ```
 ffmpeg -pattern_type glob -i "*.jpg" -filter_complex "tile=4x1:margin=10:padding=4" merged_img.jpg
 ```
+
+## Clippp
+private String[] createTimeLapseCmdLine(String input, String output) {
+        return new String[]{"-y", "-i", input, "-threads", "0", "-strict", "experimental", "-filter_complex",
+                "[0:v]trim=" + trimOneStart + ":" + trimOneStop + ",setpts=PTS-STARTPTS[v1];" +
+                "[0:v]trim=" + trimTwoStart + ":" + trimTwoStop + ",setpts=PTS-STARTPTS[v2];" +
+                "[0:v]trim=" + trimThreeStart + ":" + trimThreeStop + ",setpts=PTS-STARTPTS[v3];" +
+                "[v1]setpts=" + setTimeLapse(trimOneStart, trimOneStop, DURATION_ONE) + "*PTS[slow1];" +
+                "[v2]setpts=" + setTimeLapse(trimTwoStart, trimTwoStop, DURATION_TWO) + "*PTS[fast2];" +
+                "[v3]setpts=" + setTimeLapse(trimThreeStart, trimThreeStop, DURATION_THREE) + "*PTS[slow3];" +
+                        "[slow1][fast2][slow3]concat=n=3:v=1:a=0[out1];" +
+                        "[out1]crop=720:720,setdar=1,setsar=1[out]",
+                "-preset", PRESET_RENDER, "-crf", String.valueOf(CRF), "-an", "-map", "[out]", output}; // "-r", "24",
+    }
